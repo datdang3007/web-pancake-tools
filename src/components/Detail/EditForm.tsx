@@ -7,20 +7,23 @@ import {
   ListItem,
   Typography,
 } from "@mui/material";
+import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { IItems } from "../../App";
 import { showAlertError } from "../../utils";
 import { ButtonCommon } from "../Buttons";
 import { TextFieldCommon } from "../Form";
-import { isEqual } from "lodash";
 
 type Props = {
   form: any;
+  selectItem: IItems;
   onSubmit: () => void;
+  onClickButtonRemove: () => void;
 };
 
-export const AddForm = (props: Props) => {
-  const { form, onSubmit } = props;
+export const EditForm = (props: Props) => {
+  const { form, onSubmit, selectItem, onClickButtonRemove } = props;
   const { control } = form;
   const inputNameFilterRef = useRef<HTMLInputElement>(null);
   const [selectNameFilterIDX, setSelectNameFilterIDX] = useState<number | null>(
@@ -47,7 +50,6 @@ export const AddForm = (props: Props) => {
     name: "name_filters",
   });
 
-  // Handle Edit Name Filter
   const handleEditNameFilter = useCallback(() => {
     // If selectNameFilterIDX is null, return
     if (!selectNameFilterIDX) return;
@@ -138,7 +140,7 @@ export const AddForm = (props: Props) => {
         {/* Title */}
         <Grid2 container size="auto">
           <Typography fontWeight="bold" fontSize={20}>
-            Thêm sản phẩm
+            Sản phẩm: {selectItem?.name_order ?? ""}
           </Typography>
         </Grid2>
 
@@ -279,9 +281,19 @@ export const AddForm = (props: Props) => {
 
           {/* Button Actions */}
           <Grid2 container size="auto">
-            <Grid2 container>
+            <Grid2 container columnGap={1.5}>
+              {/* Button Edit */}
               <ButtonCommon type="submit" variant="contained">
-                <Typography fontSize={14}>Tạo</Typography>
+                <Typography fontSize={14}>Sửa</Typography>
+              </ButtonCommon>
+
+              {/* Button Remove */}
+              <ButtonCommon
+                color="error"
+                variant="contained"
+                onClick={onClickButtonRemove}
+              >
+                <Typography fontSize={14}>Xóa</Typography>
               </ButtonCommon>
             </Grid2>
           </Grid2>

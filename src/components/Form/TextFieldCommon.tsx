@@ -1,13 +1,6 @@
-import {
-  IconButton,
-  InputAdornment,
-  TextField,
-  TextFieldProps,
-} from "@mui/material";
-import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
+import { TextField, TextFieldProps, Tooltip } from "@mui/material";
+import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { RegisterOptions, UseFormReturn, useController } from "react-hook-form";
-import { Clear, SearchSharp } from "@mui/icons-material";
-import { useTheme } from "@mui/material";
 
 export type TextFieldCommonProps = TextFieldProps & {
   name: string;
@@ -16,9 +9,9 @@ export type TextFieldCommonProps = TextFieldProps & {
 };
 
 export const TextFieldCommon = (props: TextFieldCommonProps) => {
-  const theme = useTheme();
   const { name, form, rules, onChange: onChangeProp, ...rest } = props;
-  const { formState, setFocus, setValue } = form;
+  const [focused, setFocused] = useState<boolean>(false);
+  const { formState } = form;
   const { errors } = formState;
 
   const {
@@ -30,6 +23,18 @@ export const TextFieldCommon = (props: TextFieldCommonProps) => {
       ...rules,
     },
   });
+
+  const toolTipTitle = useMemo(() => {
+    if (!focused) {
+      return errors[name]?.message ?? value;
+    }
+
+    if (focused && !value) {
+      return errors[name]?.message ?? value;
+    }
+
+    return "";
+  }, [errors, focused, name, value]);
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -44,39 +49,32 @@ export const TextFieldCommon = (props: TextFieldCommonProps) => {
   );
 
   return (
-    <TextField
-      id={name}
-      {...field}
-      inputRef={ref}
-      autoComplete="off"
-      value={value ?? ""}
-      error={!!errors[name]}
-      onChange={handleChange}
-      InputLabelProps={{
-        title: props.label as string,
-        shrink: true,
-      }}
-      InputProps={{
-        sx: {
-          input: {
-            paddingBlock: 1.25,
-            paddingInline: 2,
+    <Tooltip title={toolTipTitle} enterDelay={500}>
+      <TextField
+        id={name}
+        {...field}
+        inputRef={ref}
+        autoComplete="off"
+        value={value ?? ""}
+        error={!!errors[name]}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onChange={handleChange}
+        InputLabelProps={{
+          title: props.label as string,
+          shrink: true,
+        }}
+        InputProps={{
+          sx: {
+            input: {
+              paddingBlock: 1.25,
+              paddingInline: 2,
+            },
           },
-        },
-      }}
-      FormHelperTextProps={{
-        title: (errors?.message ?? "") as string,
-        sx: {
-          bottom: 2,
-          width: "100%",
-          overflow: "hidden",
-          position: "absolute",
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-        },
-      }}
-      required={props.required ?? Boolean(props.rules?.required)}
-      {...rest}
-    />
+        }}
+        // required={props.required ?? Boolean(props.rules?.required)}
+        {...rest}
+      />
+    </Tooltip>
   );
 };

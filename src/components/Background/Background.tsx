@@ -34,6 +34,7 @@ const backAnimation = keyframes`
 // Create styled component
 const BackgroundStyled = styled(Grid2)({
   height: "100vh",
+  overflow: "hidden",
   position: "relative",
   backgroundImage: `
       url("https://github.com/Kageetai/mario-background-parallax/blob/master/img/mario.gif?raw=true"),
