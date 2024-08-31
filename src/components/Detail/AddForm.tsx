@@ -12,7 +12,6 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { showAlertError } from "../../utils";
 import { ButtonCommon } from "../Buttons";
 import { TextFieldCommon } from "../Form";
-import { isEqual } from "lodash";
 
 type Props = {
   form: any;
@@ -41,11 +40,27 @@ export const AddForm = (props: Props) => {
     fields: nameFilters,
     append,
     update,
+    remove,
     replace,
   } = useFieldArray<any, any>({
     control,
     name: "name_filters",
   });
+
+  // Handle Delete Name Filter
+  const handleClickIconDelete = useCallback(
+    (item: any, index: number) => {
+      // If selectNameFilterIDX is not null, handleEditNameFilter
+      if (selectNameFilterIDX === index + 1) {
+        setSelectNameFilterIDX(null);
+        setValueInputFilterForm("input_filter", "");
+      }
+
+      // Remove name filter from the list
+      remove(index);
+    },
+    [remove, selectNameFilterIDX, setValueInputFilterForm]
+  );
 
   // Handle Edit Name Filter
   const handleEditNameFilter = useCallback(() => {
@@ -111,10 +126,10 @@ export const AddForm = (props: Props) => {
 
   // Sort name filters by length DESC
   useEffect(() => {
-    const sortedNameFilters = nameFilters.sort(
+    const sortedNameFilters = [...nameFilters].sort(
       (a: any, b: any) => b.name.length - a.name.length
     );
-    if (isEqual(nameFilters, sortedNameFilters)) return;
+    if (!haveSameNamesButDifferentOrder(nameFilters, sortedNameFilters)) return;
     replace(sortedNameFilters);
   }, [replace, nameFilters]);
 
@@ -264,7 +279,12 @@ export const AddForm = (props: Props) => {
                               <Create sx={{ fontSize: 18 }} />
                             </IconButton>
 
-                            <IconButton color="error">
+                            <IconButton
+                              color="error"
+                              onClick={() => {
+                                handleClickIconDelete(field, index);
+                              }}
+                            >
                               <Delete sx={{ fontSize: 18 }} />
                             </IconButton>
                           </Grid2>
@@ -289,4 +309,25 @@ export const AddForm = (props: Props) => {
       </Grid2>
     </Card>
   );
+};
+
+const haveSameNamesButDifferentOrder = (arr1: any[], arr2: any[]) => {
+  // Kiểm tra nếu hai mảng có độ dài khác nhau
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  // Lấy tất cả giá trị của trường 'name' từ cả hai mảng và sắp xếp
+  const namesArr1 = arr1.map((item) => item.name).sort();
+  const namesArr2 = arr2.map((item) => item.name).sort();
+
+  // So sánh hai mảng giá trị 'name' đã sắp xếp
+  for (let i = 0; i < namesArr1.length; i++) {
+    if (namesArr1[i] !== namesArr2[i]) {
+      return false;
+    }
+  }
+
+  // Kiểm tra nếu có sự khác biệt về vị trí
+  return !arr1.every((item, index) => item.name === arr2[index].name);
 };
