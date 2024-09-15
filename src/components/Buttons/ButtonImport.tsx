@@ -4,15 +4,17 @@ import { ButtonCommon } from "./ButtonCommon";
 
 type Props = {
   handleDataImport: (data: any) => void;
+  setIsImporting: (isImporting: boolean) => void;
 };
 
 export const ButtonImport = (props: Props) => {
-  const { handleDataImport } = props;
+  const { setIsImporting, handleDataImport } = props;
 
   // Hàm xử lý khi người dùng chọn file
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setIsImporting(true);
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -24,6 +26,7 @@ export const ButtonImport = (props: Props) => {
         }
       };
       reader.readAsText(file);
+      setIsImporting(false);
     }
   };
 

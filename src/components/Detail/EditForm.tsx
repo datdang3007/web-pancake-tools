@@ -7,7 +7,6 @@ import {
   ListItem,
   Typography,
 } from "@mui/material";
-import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { IItems } from "../../App";

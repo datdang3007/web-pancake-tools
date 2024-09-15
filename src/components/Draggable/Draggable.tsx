@@ -18,11 +18,14 @@ type Props = {
   items: any[];
   setItems: any;
   enable: boolean;
+  selectItem: IItems | null;
+  onOffSelectItem: () => void;
   onSelectItem: (item: any) => void;
 };
 
 export const Draggable = (props: Props) => {
-  const { items, enable, setItems, onSelectItem } = props;
+  const { items, enable, setItems, selectItem, onOffSelectItem, onSelectItem } =
+    props;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -57,7 +60,9 @@ export const Draggable = (props: Props) => {
             item={item}
             key={item.id}
             enabled={enable}
+            selectItem={selectItem}
             onSelectItem={onSelectItem}
+            onOffSelectItem={onOffSelectItem}
           />
         ))}
       </>
@@ -72,7 +77,9 @@ export const Draggable = (props: Props) => {
             item={item}
             key={item.id}
             enabled={enable}
+            selectItem={selectItem}
             onSelectItem={onSelectItem}
+            onOffSelectItem={onOffSelectItem}
           />
         ))}
       </SortableContext>

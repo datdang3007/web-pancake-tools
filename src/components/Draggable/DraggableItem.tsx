@@ -1,27 +1,55 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Create } from "@mui/icons-material";
-import { Grid2, IconButton, ListItem, Typography } from "@mui/material";
-import { memo, useCallback } from "react";
+import { Create, EditOff } from "@mui/icons-material";
+import {
+  Grid2,
+  IconButton,
+  ListItem,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { memo, useCallback, useMemo } from "react";
+import { IItems } from "../../App";
 
 type Props = {
   item: any;
   enabled: boolean;
+  selectItem: IItems | null;
+  onOffSelectItem: () => void;
   onSelectItem: (item: any) => void;
 };
 
 export const DraggableItem = memo((props: Props) => {
-  const { item, enabled, onSelectItem } = props;
+  const theme = useTheme();
+  const { item, enabled, selectItem, onSelectItem, onOffSelectItem } = props;
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: item.id });
 
+  const isSelected = useMemo(() => {
+    return selectItem?.id === item.id;
+  }, [item, selectItem]);
+
+  // Event when click icon edit:
   const onClick = useCallback(() => {
     onSelectItem(item);
-  }, [item, onSelectItem]);
+  }, [item, isSelected, onSelectItem]);
+
+  // Event when click icon off:
+  const onClickOff = useCallback(() => {
+    onOffSelectItem();
+  }, [onOffSelectItem]);
 
   return (
     <ListItem>
-      <Grid2 container size={12}>
+      <Grid2
+        container
+        size={12}
+        sx={{
+          borderRadius: 1,
+          transition: "background 0.3s",
+          background: isSelected ? theme.palette.primary.main : undefined,
+        }}
+      >
         {enabled ? (
           <Grid2
             container
@@ -44,7 +72,11 @@ export const DraggableItem = memo((props: Props) => {
                 },
               }}
             >
-              <Typography gutterBottom fontSize={16}>
+              <Typography
+                gutterBottom
+                fontSize={16}
+                sx={{ color: isSelected ? "white" : undefined }}
+              >
                 {item.name_order}
               </Typography>
             </Grid2>
@@ -52,7 +84,11 @@ export const DraggableItem = memo((props: Props) => {
         ) : (
           <Grid2 container size="grow" position="relative">
             <Grid2 container size={12} sx={{ padding: `8px 16px` }}>
-              <Typography gutterBottom fontSize={16}>
+              <Typography
+                gutterBottom
+                fontSize={16}
+                sx={{ color: isSelected ? "white" : undefined }}
+              >
                 {item.name_order}
               </Typography>
             </Grid2>
@@ -69,8 +105,18 @@ export const DraggableItem = memo((props: Props) => {
             transform: "translateY(-50%)",
           }}
         >
-          <IconButton color="success" onClick={onClick}>
-            <Create sx={{ fontSize: 18 }} />
+          <IconButton
+            color="success"
+            onClick={isSelected ? onClickOff : onClick}
+            sx={{
+              color: isSelected ? "white" : undefined,
+            }}
+          >
+            {isSelected ? (
+              <EditOff sx={{ fontSize: 18 }} />
+            ) : (
+              <Create sx={{ fontSize: 18 }} />
+            )}
           </IconButton>
         </Grid2>
       </Grid2>

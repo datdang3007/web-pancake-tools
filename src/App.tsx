@@ -1,6 +1,7 @@
 import { SwapVert } from "@mui/icons-material";
 import {
   Card,
+  CircularProgress,
   Container,
   debounce,
   Divider,
@@ -44,11 +45,16 @@ const App = () => {
   const [search, setSearch] = useState<string>("");
   const [items, setItems] = useState<IItems[]>([]);
   const [enableSwap, setEnableSwap] = useState<boolean>(false);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
   const [selectItem, setSelectItem] = useState<IItems | null>(null);
   const [itemsVisualization, setItemsVisualization] = useState<IItems[]>([]);
 
   const form = useForm<IForm>({ defaultValues: defaultFormValues });
-  const { reset, handleSubmit } = form;
+  const {
+    reset,
+    handleSubmit,
+    formState: { isDirty },
+  } = form;
 
   // Handle Submit Add New Item:
   const handleSubmitAddNew = useCallback(
@@ -127,17 +133,50 @@ const App = () => {
   // On Click Item:
   const onSelectItem = useCallback(
     (item: IItems) => {
+      // show alert if form is dirty:
+      let confirm = true;
+      if (isDirty) {
+        confirm = window.confirm(
+          "Có thay đổi chưa được lưu, Bạn có muốn thao tác tiếp không?"
+        );
+      }
+      if (!confirm) return;
+
       setSelectItem(item);
       form.reset(item);
     },
-    [form]
+    [form, isDirty]
   );
+
+  // On Click Item Off:
+  const onOffSelectItem = useCallback(() => {
+    // show alert if form is dirty:
+    let confirm = true;
+    if (isDirty) {
+      confirm = window.confirm(
+        "Có thay đổi chưa được lưu, Bạn có muốn thao tác tiếp không?"
+      );
+    }
+    if (!confirm) return;
+
+    reset(defaultFormValues);
+    setSelectItem(null);
+  }, [form, isDirty]);
 
   // On Click Button Add In Header:
   const onClickButtonAdd = useCallback(() => {
+    // show alert if form is dirty:
+    let confirm = true;
+    if (selectItem && isDirty) {
+      confirm = window.confirm(
+        "Có thay đổi chưa được lưu, Bạn có muốn thao tác tiếp không?"
+      );
+    }
+    if (!confirm) return;
+
     reset(defaultFormValues);
     setSelectItem(null);
-  }, [reset]);
+  }, [reset, isDirty, selectItem]);
 
   // On Click Button Remove:
   const onClickButtonRemove = useCallback(() => {
@@ -236,7 +275,10 @@ const App = () => {
                 <Grid2 container size="auto" columnGap={1.5}>
                   {/* Button Add New */}
                   <Grid2 container size="auto">
-                    <ButtonImport handleDataImport={handleDataImport} />
+                    <ButtonImport
+                      setIsImporting={setIsImporting}
+                      handleDataImport={handleDataImport}
+                    />
                   </Grid2>
 
                   {/* Button Export */}
@@ -287,6 +329,9 @@ const App = () => {
                           sx={{ ml: 1, flex: 1 }}
                           placeholder="Tìm kiếm"
                           onChange={onChangeSearch}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.preventDefault();
+                          }}
                         />
                         <Divider
                           sx={{ height: 28, m: 0.5 }}
@@ -321,8 +366,9 @@ const App = () => {
                     {/* List Items */}
                     <Grid2
                       sx={{
+                        overflowY: "auto",
+                        overflowX: "hidden",
                         height: "calc(100% - 48px)",
-                        overflow: "auto",
                         "::-webkit-scrollbar": {
                           width: "5px",
                         },
@@ -337,7 +383,7 @@ const App = () => {
                         },
                       }}
                     >
-                      {itemsVisualization.length === 0 && (
+                      {!isImporting && itemsVisualization.length === 0 && (
                         <Grid2>
                           <Typography
                             sx={{
@@ -351,12 +397,28 @@ const App = () => {
                         </Grid2>
                       )}
 
-                      <Draggable
-                        setItems={setItems}
-                        enable={enableSwap}
-                        items={itemsVisualization}
-                        onSelectItem={onSelectItem}
-                      />
+                      {isImporting && (
+                        <Grid2
+                          container
+                          size={12}
+                          height={1}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <CircularProgress size={40} thickness={4} />
+                        </Grid2>
+                      )}
+
+                      {!isImporting && (
+                        <Draggable
+                          setItems={setItems}
+                          enable={enableSwap}
+                          selectItem={selectItem}
+                          items={itemsVisualization}
+                          onSelectItem={onSelectItem}
+                          onOffSelectItem={onOffSelectItem}
+                        />
+                      )}
                     </Grid2>
                   </Card>
                 </Grid2>
